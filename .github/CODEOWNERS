@@ -1,0 +1,5 @@
+# Replace placeholders with real GitHub owners before enabling required reviews.
+/* @REPLACE_WITH_OWNER
+/.github/ @REPLACE_WITH_OWNER
+/command/ @REPLACE_WITH_OWNER
+/docs/ @REPLACE_WITH_OWNER

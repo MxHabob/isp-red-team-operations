@@ -1,0 +1,100 @@
+# ACC-001 — Accounting Consistency Test
+# Validates that ISP accounting matches independent measurement
+
+scenario_id: SC-ACC-001
+version: "1.0"
+status: implemented
+objective: "Validate accounting consistency for an authorized test account"
+hypothesis: >
+  For an authorized test account, provider-recorded usage should be
+  consistent with independently measured traffic under approved test
+  conditions.  Any discrepancy indicates a potential accounting gap.
+
+risk: low
+scope_ref: command/scope.yaml
+test_identity: TEST-ACCOUNT-001
+
+prerequisites:
+  - Scope approved and populated
+  - Test account verified and accessible
+  - Independent measurement capability available
+  - Evidence storage configured
+  - Clock synchronized between measurement points
+
+steps:
+  - action: baseline
+    description: "Record baseline state — no active traffic"
+    measurements:
+      - provider_visible_usage
+      - independent_measurement
+      - timestamp
+
+  - action: controlled_transfer
+    description: "Generate controlled traffic to known destination"
+    parameters:
+      protocol: https
+      destination: authorized_endpoint
+      size_bytes: 10485760  # 10 MB
+      direction: download
+    measurements:
+      - bytes_transferred
+      - duration_seconds
+      - protocol
+      - destination
+
+  - action: wait_accounting
+    description: "Wait for provider accounting to update"
+    parameters:
+      wait_seconds: 120
+
+  - action: compare
+    description: "Compare independent measurement vs provider accounting"
+    measurements:
+      - independent_bytes
+      - provider_reported_bytes
+      - delta_bytes
+      - delta_percentage
+
+expected_behavior: >
+  Independent measurement and provider-reported usage are within agreed
+  tolerance (±5%).  No unexplained policy difference is observed.
+
+measurements:
+  - test start/end timestamps
+  - bytes observed at controlled measurement point
+  - provider-visible usage (if legitimately available)
+  - protocol/destination class
+  - IPv4/IPv6 path
+  - retransmissions and retries
+
+telemetry:
+  - network traffic counters
+  - accounting observations
+  - test execution events
+
+evidence:
+  - measurement log
+  - packet capture metadata
+  - provider accounting screenshot/export (if authorized)
+  - hash manifest
+
+stop_conditions:
+  - Traffic leaves approved scope
+  - Customer data becomes visible
+  - Service degradation observed
+  - Unexpected production impact
+  - Test identity behaves unexpectedly
+
+cleanup:
+  - Verify no residual traffic
+  - Record final accounting state
+  - Close test session
+
+success_criteria: >
+  Measurements are within agreed tolerance and no unexplained difference
+  is observed between independent measurement and provider accounting.
+
+failure_criteria: >
+  Significant discrepancy (>5%) between independent measurement and
+  provider accounting, OR policy difference correlated with traffic type,
+  protocol, or destination.

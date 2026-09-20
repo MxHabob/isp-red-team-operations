@@ -1,0 +1,63 @@
+# Environment Profiles
+# Defines configuration for each environment
+
+profiles:
+  lab:
+    description: "Local lab environment — no real ISP connectivity"
+    default: true
+    requires_authorization: false
+    network_access: synthetic
+    evidence_store: .local/evidence
+    telemetry_store: .local/telemetry
+    features:
+      - synthetic_data
+      - mock_services
+      - full_telemetry
+    restrictions: []
+
+  development:
+    description: "Development environment — isolated network"
+    default: false
+    requires_authorization: false
+    network_access: isolated
+    evidence_store: .local/evidence
+    telemetry_store: .local/telemetry
+    features:
+      - synthetic_data
+      - mock_services
+    restrictions: []
+
+  authorized-field:
+    description: "Authorized field testing — real ISP with explicit authorization"
+    default: false
+    requires_authorization: true
+    network_access: authorized_real
+    evidence_store: "${REDTEAM_EVIDENCE_STORE}"
+    telemetry_store: "${REDTEAM_TELEMETRY_STORE}"
+    features:
+      - real_network
+      - real_accounting
+    restrictions:
+      - scope_must_be_approved
+      - kill_switch_must_be_active
+      - operator_must_be_authorized
+      - evidence_must_be_stored_externally
+
+  production:
+    description: "Production ISP — requires maximum authorization"
+    default: false
+    requires_authorization: true
+    network_access: production
+    evidence_store: "${REDTEAM_EVIDENCE_STORE}"
+    telemetry_store: "${REDTEAM_TELEMETRY_STORE}"
+    features:
+      - real_network
+      - real_accounting
+      - real_monitoring
+    restrictions:
+      - scope_must_be_approved
+      - kill_switch_must_be_active
+      - operator_must_be_authorized
+      - evidence_must_be_stored_externally
+      - explicit_production_authorization_required
+      - minimal_impact_only

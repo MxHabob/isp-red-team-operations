@@ -1,0 +1,56 @@
+# Test Identities — Controlled test accounts for authorized testing
+# NEVER use real customer accounts without explicit written authorization
+
+identities:
+  - identity_id: TEST-ACCOUNT-001
+    role: subscriber
+    description: "Primary test subscriber account"
+    permissions:
+      - internet_access
+      - dns_resolution
+    service_profile: "standard"
+    quota: "50GB"
+    network_profile: "residential"
+    status: placeholder  # Replace with actual test account when available
+
+  - identity_id: TEST-SUBSCRIBER-001
+    role: subscriber
+    description: "Secondary test subscriber for comparison"
+    permissions:
+      - internet_access
+      - dns_resolution
+    service_profile: "standard"
+    quota: "50GB"
+    network_profile: "residential"
+    status: placeholder
+
+  - identity_id: TEST-CPE-001
+    role: cpe_device
+    description: "Test CPE/modem device"
+    permissions:
+      - network_access
+    service_profile: "default"
+    quota: "N/A"
+    network_profile: "cpe"
+    status: placeholder
+
+  - identity_id: TEST-DEVICE-001
+    role: client_device
+    description: "Test client device"
+    permissions:
+      - internet_access
+    service_profile: "default"
+    quota: "N/A"
+    network_profile: "client"
+    status: placeholder
+
+  - identity_id: TEST-ENDPOINT-001
+    role: controlled_endpoint
+    description: "Controlled test endpoint/server"
+    permissions:
+      - receive_traffic
+      - send_traffic
+    service_profile: "server"
+    quota: "unlimited"
+    network_profile: "server"
+    status: placeholder

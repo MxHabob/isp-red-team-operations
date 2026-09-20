@@ -1,0 +1,32 @@
+operation_id: RT-YNET-001
+name: ISP Network Security Assessment
+status: draft
+
+authorized_assets:
+  - name: "AUTHORIZED_TEST_ACCOUNT"
+    type: account
+    identifier: "REPLACE_ME"
+
+authorized_networks:
+  - "REPLACE_WITH_AUTHORIZED_CIDR"
+
+excluded_assets:
+  - "customer data"
+  - "third-party systems"
+  - "unapproved production infrastructure"
+
+allowed_activity:
+  - controlled measurement
+  - protocol analysis
+  - traffic characterization
+  - authorized accounting validation
+  - authorized monitoring validation
+
+prohibited_activity:
+  - unauthorized access
+  - credential theft
+  - destructive actions
+  - persistence on third-party systems
+  - anti-forensics
+  - evasion intended to conceal unauthorized activity
+  - denial of service

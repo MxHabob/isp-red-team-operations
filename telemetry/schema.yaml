@@ -1,0 +1,6 @@
+telemetry_id: TEL-EXAMPLE-001
+test_id: EXAMPLE-001
+timestamp: REPLACE_ME
+source: controlled-test-client
+type: network
+storage_ref: external://REPLACE_ME

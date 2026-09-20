@@ -1,0 +1,39 @@
+name: validate
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  repository-validation:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Validate repository structure
+        run: python3 scripts/validate_repo.py
+
+      - name: Validate YAML
+        run: |
+          python3 - <<'PY'
+          import pathlib
+          try:
+              import yaml
+          except ImportError:
+              print("PyYAML unavailable; strict YAML validation should be enabled in CI.")
+              raise SystemExit(0)
+          for p in pathlib.Path(".").rglob("*.y*ml"):
+              yaml.safe_load(p.read_text())
+              print("OK", p)
+          PY
+
+      - name: Check for obvious secret files
+        run: |
+          if find . -type f \( -name '*.pem' -o -name '*.key' -o -name '*.p12' -o -name '*.pfx' \) -not -path './.git/*' | grep -q .; then
+            echo "Potential secret/key files detected."
+            exit 1
+          fi

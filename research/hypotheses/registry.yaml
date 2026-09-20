@@ -1,0 +1,135 @@
+# Research Hypothesis Registry
+# Each hypothesis represents a testable question about ISP security controls
+
+registry_version: "1.0"
+operation_id: RT-YNET-001
+
+hypotheses:
+  - id: HYP-AUTH-001
+    title: Authentication Gap
+    category: authentication
+    question: >
+      Are there conditions under which a subscriber can access network
+      services without completing the expected authentication process?
+    status: unconfirmed
+    priority: high
+
+  - id: HYP-AUTHZ-001
+    title: Authorization Gap
+    category: authorization
+    question: >
+      After authentication, are there conditions under which a subscriber
+      can access resources or services beyond their authorized tier/profile?
+    status: unconfirmed
+    priority: high
+
+  - id: HYP-SESS-001
+    title: Session State Gap
+    category: session
+    question: >
+      Are there conditions under which session state becomes inconsistent
+      between the subscriber endpoint, the gateway, and the accounting
+      system, potentially allowing service access without proper session
+      tracking?
+    status: unconfirmed
+    priority: high
+
+  - id: HYP-ACC-001
+    title: Accounting Gap
+    category: accounting
+    question: >
+      Does the provider's accounting system accurately track all traffic
+      for all protocols, destinations, and conditions, or are there
+      categories of traffic that are under-counted or not counted?
+    status: unconfirmed
+    priority: high
+
+  - id: HYP-QUOTA-001
+    title: Quota Gap
+    category: quota
+    question: >
+      Does the quota enforcement system correctly enforce limits across
+      all traffic types, or are there conditions under which quota
+      enforcement can be circumvented?
+    status: unconfirmed
+    priority: medium
+
+  - id: HYP-POL-001
+    title: Policy Enforcement Gap
+    category: policy
+    question: >
+      Are network access policies (rate limiting, content filtering,
+      destination restrictions) consistently enforced across all protocols
+      and transport types?
+    status: unconfirmed
+    priority: medium
+
+  - id: HYP-CLASS-001
+    title: Traffic Classification Gap
+    category: classification
+    question: >
+      Does the ISP's traffic classification correctly identify and
+      categorize all traffic types, or can traffic be misclassified
+      to receive different policy treatment?
+    status: unconfirmed
+    priority: medium
+
+  - id: HYP-IP46-001
+    title: IPv4/IPv6 Policy Gap
+    category: ipv4_ipv6
+    question: >
+      Are access controls, accounting, and policy enforcement
+      consistent between IPv4 and IPv6 paths, or does one stack
+      have weaker controls?
+    status: unconfirmed
+    priority: medium
+
+  - id: HYP-DNS-001
+    title: DNS Policy Gap
+    category: dns
+    question: >
+      Does the DNS resolution path enforce the same access policies
+      as the data path, or can DNS-level behavior differences be
+      used to access unauthorized resources?
+    status: unconfirmed
+    priority: medium
+
+  - id: HYP-TLS-001
+    title: TLS Policy Gap
+    category: tls
+    question: >
+      Does TLS-encrypted traffic receive the same policy enforcement
+      as plaintext traffic, or does encryption create a policy gap
+      due to reduced visibility?
+    status: unconfirmed
+    priority: medium
+
+  - id: HYP-PROV-001
+    title: Provisioning Gap
+    category: provisioning
+    question: >
+      Are there timing windows or race conditions in the provisioning
+      process that could allow service access before policies are
+      fully applied or after they should have been revoked?
+    status: unconfirmed
+    priority: medium
+
+  - id: HYP-MON-001
+    title: Monitoring Gap
+    category: monitoring
+    question: >
+      Does the ISP's monitoring and alerting system detect all
+      categories of unauthorized or anomalous activity, or are
+      there blind spots?
+    status: unconfirmed
+    priority: medium
+
+  - id: HYP-CORR-001
+    title: Correlation Gap
+    category: correlation
+    question: >
+      Can the ISP's systems correlate events across authentication,
+      authorization, accounting, and monitoring to detect a multi-step
+      attack chain, or do isolated systems create correlation gaps?
+    status: unconfirmed
+    priority: low

@@ -1,0 +1,51 @@
+# Scenario Registry — Master index of all test scenarios
+# Each entry references the scenario YAML file
+
+registry_version: "1.0"
+operation_id: RT-YNET-001
+
+scenarios:
+  - id: SC-ACC-001
+    file: accounting/ACC-001-accounting-consistency.yaml
+    category: accounting
+    status: implemented
+
+  - id: SC-AUTH-001
+    file: authentication/AUTH-001-authentication-boundary.yaml
+    category: authentication
+    status: planned
+
+  - id: SC-AUTHZ-001
+    file: authorization/AUTHZ-001-authorization-boundary.yaml
+    category: authorization
+    status: planned
+
+  - id: SC-DNS-001
+    file: dns/DNS-001-dns-policy-consistency.yaml
+    category: dns
+    status: planned
+
+  - id: SC-NET-001
+    file: network/NET-001-network-baseline.yaml
+    category: network
+    status: planned
+
+  - id: SC-TLS-001
+    file: tls/TLS-001-tls-policy-consistency.yaml
+    category: tls
+    status: planned
+
+  - id: SC-SESS-001
+    file: session/SESS-001-session-state.yaml
+    category: session
+    status: planned
+
+  - id: SC-QUOTA-001
+    file: quota/QUOTA-001-quota-enforcement.yaml
+    category: quota
+    status: planned
+
+  - id: SC-MON-001
+    file: monitoring/MON-001-detection-baseline.yaml
+    category: monitoring
+    status: planned

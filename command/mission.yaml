@@ -1,0 +1,9 @@
+operation_id: RT-YNET-001
+name: ISP Network Security Assessment
+phase: repository-bootstrap
+status: planning
+objectives:
+  - establish reproducible network baseline
+  - validate authorized traffic classification behavior
+  - validate authorized accounting consistency
+  - validate monitoring and evidence workflows
