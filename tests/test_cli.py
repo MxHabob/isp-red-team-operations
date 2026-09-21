@@ -60,4 +60,4 @@ def test_cli_run_dry_run_with_approved_project(runner, tmp_project: Path, monkey
     monkeypatch.chdir(tmp_project)
     result = runner.invoke(cli, ["run", "dry-run", "--scenario", "SC-TEST-001"])
     assert result.exit_code == 0
-    assert "Dry-run completed successfully" in result.output or "All lifecycle phases passed" in result.output
+    assert "dry run completed successfully" in result.output.lower()

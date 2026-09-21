@@ -27,7 +27,7 @@ def test_telemetry_collector_record_and_read(tmp_path: Path):
     assert event.operation_id == "RT-YNET-001"
     assert event.data["bytes_sent"] == 1048576
 
-    events = collector.get_events_for_run("RUN-2026-000001")
+    events = collector.read_events("RUN-2026-000001")
     assert len(events) == 1
     assert events[0].event_id == event.event_id
 
@@ -50,6 +50,9 @@ def test_telemetry_collector_sequence_increment(tmp_path: Path):
         event_type=TelemetryEventType.ACCOUNTING,
     )
 
-    assert e1.sequence == 1
-    assert e2.sequence == 2
     assert e1.event_id != e2.event_id
+    assert e1.event_id == "TEL-TST-001-0001"
+    assert e2.event_id == "TEL-TST-001-0002"
+
+    events = collector.read_events("RUN-2026-000001")
+    assert len(events) == 2
