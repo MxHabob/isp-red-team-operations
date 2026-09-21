@@ -1,14 +1,16 @@
 operation_id: RT-YNET-001
-name: ISP Network Security Assessment
-status: draft
+name: ISP Network Security Assessment - Lab Environment
+status: approved
+environment: lab
 
 authorized_assets:
-  - name: "AUTHORIZED_TEST_ACCOUNT"
+  - name: "Lab Test Subscriber Alpha"
     type: account
-    identifier: "REPLACE_ME"
+    identifier: "SYN-ACC-001"
 
 authorized_networks:
-  - "REPLACE_WITH_AUTHORIZED_CIDR"
+  - "10.100.0.0/24"
+  - "10.200.0.0/24"
 
 excluded_assets:
   - "customer data"

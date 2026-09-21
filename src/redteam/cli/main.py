@@ -24,6 +24,10 @@ from redteam.core.errors import RedTeamError
 
 
 def _setup_logging(verbose: bool) -> None:
+    if hasattr(sys.stdout, "reconfigure"):
+        sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+    if hasattr(sys.stderr, "reconfigure"):
+        sys.stderr.reconfigure(encoding="utf-8", errors="replace")
     level = logging.DEBUG if verbose else logging.INFO
     logging.basicConfig(
         level=level,
