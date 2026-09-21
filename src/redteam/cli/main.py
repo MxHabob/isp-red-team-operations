@@ -138,6 +138,7 @@ def safety_check(ctx: click.Context) -> None:
         report = engine.run_checks(
             scope_engine.scope, config.environment, config.evidence_store
         )
+        click.echo("Safety checks:")
         click.echo(report.summary())
         if report.passed:
             click.echo("\n✓ All safety checks passed")
@@ -288,6 +289,62 @@ def run_dryrun(ctx: click.Context, scenario_id: str, operator: str) -> None:
             click.echo("\n✓ Dry run completed successfully")
         else:
             click.echo("\n✗ Dry run completed with errors:")
+            for err in result.errors:
+                click.echo(f"  ✗ {err}")
+            sys.exit(1)
+
+    except RedTeamError as exc:
+        click.echo(f"✗ Error: {exc}", err=True)
+        sys.exit(1)
+
+
+@run.command("execute")
+@click.option("--scenario", "scenario_id", required=True, help="Scenario ID to execute.")
+@click.option("--operator", default="cli", help="Operator identity.")
+@click.pass_context
+def run_execute(ctx: click.Context, scenario_id: str, operator: str) -> None:
+    """Execute a scenario in the authorized lab environment."""
+    from redteam.runtime.runner import TestRunner
+    from redteam.safety.engine import SafetyEngine
+    from redteam.safety.killswitch import KillSwitch
+    from redteam.scenarios.engine import ScenarioEngine
+    from redteam.scope.engine import ScopeEngine
+
+    config: PlatformConfig = ctx.obj["config"]
+    config.ensure_runtime_dirs()
+
+    try:
+        # Initialize engines
+        scope_engine = ScopeEngine()
+        scope_engine.load(config.scope_file)
+
+        ks = KillSwitch(config.runtime_dir / "killswitch.json")
+        safety_engine = SafetyEngine(ks)
+
+        scenario_engine = ScenarioEngine(config.scenarios_dir)
+        scenario_engine.load_all()
+        scenario_def = scenario_engine.get(scenario_id)
+
+        runner = TestRunner(config, scope_engine, safety_engine, ks)
+        result = runner.execute(scenario_def, operator=operator, dry_run=False)
+
+        click.echo("\n" + "=" * 60)
+        click.echo(f"EXECUTION: {scenario_id}")
+        click.echo("=" * 60)
+        click.echo(result.lifecycle.summary())
+        click.echo("\nObservations:")
+        for obs in result.observations:
+            click.echo(f"  {obs}")
+
+        if result.evidence_ids:
+            click.echo("\nEvidence:")
+            for evid in result.evidence_ids:
+                click.echo(f"  [+] {evid}")
+
+        if result.success:
+            click.echo("\n✓ Scenario executed successfully")
+        else:
+            click.echo("\n✗ Execution completed with errors:")
             for err in result.errors:
                 click.echo(f"  ✗ {err}")
             sys.exit(1)
