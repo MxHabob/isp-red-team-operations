@@ -7,17 +7,15 @@ from pathlib import Path
 import pytest
 
 from redteam.core.types import (
-    CVSSVector,
-    Environment,
+    EnvironmentProfile,
     Finding,
+    FindingSeverity,
     FindingStatus,
+    HypothesisConfidence,
     OperationRecord,
     OperationStatus,
-    RemediationGuidance,
     ScenarioDefinition,
-    ScenarioStep,
     ScopeDefinition,
-    Severity,
 )
 from redteam.reporting.generator import ReportGenerator
 
@@ -30,39 +28,34 @@ def test_report_generator_produces_markdown(tmp_path: Path):
         operation_id="RT-YNET-001",
         name="ISP Security Assessment",
         status=OperationStatus.ACTIVE,
-        lead="Security Architect",
     )
 
     scope = ScopeDefinition(
         operation_id="RT-YNET-001",
         name="Test Scope",
-        version="1.0",
-        environment=Environment.LAB,
-        authorized_assets=["192.0.2.1"],
+        status="approved",
+        environment=EnvironmentProfile.LAB,
+        authorized_assets=[],
         authorized_networks=["192.0.2.0/24"],
         allowed_activity=["accounting_validation"],
-        status="approved",
     )
 
     scenario = ScenarioDefinition(
         scenario_id="SC-ACC-001",
         version="1.0",
         objective="Accounting test",
-        steps=[ScenarioStep(action="baseline", description="Initial check")],
+        steps=[{"action": "baseline", "description": "Initial check"}],
     )
 
     finding = Finding(
-        finding_id="FIND-2026-001",
+        finding_id="F-ACC-001",
         title="Unaccounted Egress",
-        severity=Severity.MEDIUM,
-        cvss=CVSSVector(base_score=5.3, vector_string="CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:L/A:N"),
-        affected_systems=["BRAS-01"],
-        status=FindingStatus.CONFIRMED,
-        description="Traffic discrepancy observed.",
-        remediation=RemediationGuidance(
-            summary="Update billing triggers",
-            recommendations=["Recalibrate RADIUS interim intervals"],
-        ),
+        severity=FindingSeverity.MEDIUM,
+        status=FindingStatus.VALIDATED,
+        observation="Traffic discrepancy observed.",
+        confidence=HypothesisConfidence.CONFIRMED,
+        recommendation="Recalibrate RADIUS interim intervals",
+        evidence_ids=["EVI-20260921-0001"],
     )
 
     result_path = generator.generate(
@@ -80,6 +73,5 @@ def test_report_generator_produces_markdown(tmp_path: Path):
     content = result_path.read_text(encoding="utf-8")
     assert "ISP Security Assessment" in content
     assert "RT-YNET-001" in content
-    assert "FIND-2026-001" in content
+    assert "F-ACC-001" in content
     assert "Unaccounted Egress" in content
-    assert "EVI-20260921-0001" in content

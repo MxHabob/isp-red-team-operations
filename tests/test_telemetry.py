@@ -15,10 +15,10 @@ def test_telemetry_collector_record_and_read(tmp_path: Path):
 
     event = collector.record(
         operation_id="RT-YNET-001",
-        run_id="RUN-20260921-0001",
-        test_id="TST-20260921-0001",
+        run_id="RUN-2026-000001",
+        test_id="TST-001",
         source="client-probe-01",
-        event_type=TelemetryEventType.MEASUREMENT,
+        event_type=TelemetryEventType.NETWORK,
         data={"bytes_sent": 1048576, "rtt_ms": 14.2},
         classification=DataClassification.INTERNAL,
     )
@@ -27,7 +27,7 @@ def test_telemetry_collector_record_and_read(tmp_path: Path):
     assert event.operation_id == "RT-YNET-001"
     assert event.data["bytes_sent"] == 1048576
 
-    events = collector.get_events_for_run("RUN-20260921-0001")
+    events = collector.get_events_for_run("RUN-2026-000001")
     assert len(events) == 1
     assert events[0].event_id == event.event_id
 
@@ -37,17 +37,17 @@ def test_telemetry_collector_sequence_increment(tmp_path: Path):
 
     e1 = collector.record(
         operation_id="RT-YNET-001",
-        run_id="RUN-20260921-0001",
-        test_id="TST-20260921-0001",
+        run_id="RUN-2026-000001",
+        test_id="TST-001",
         source="client",
-        event_type=TelemetryEventType.STATE_CHANGE,
+        event_type=TelemetryEventType.SESSION,
     )
     e2 = collector.record(
         operation_id="RT-YNET-001",
-        run_id="RUN-20260921-0001",
-        test_id="TST-20260921-0001",
+        run_id="RUN-2026-000001",
+        test_id="TST-001",
         source="client",
-        event_type=TelemetryEventType.MEASUREMENT,
+        event_type=TelemetryEventType.ACCOUNTING,
     )
 
     assert e1.sequence == 1
