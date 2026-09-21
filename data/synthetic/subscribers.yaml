@@ -1,0 +1,55 @@
+# Synthetic Subscribers — Deterministic test data
+# Seed: 42 (for reproducibility)
+
+subscribers:
+  - id: SYN-SUB-001
+    name: "Test Subscriber Alpha"
+    account_id: SYN-ACC-001
+    service_tier: standard
+    quota_gb: 50
+    quota_used_gb: 12.5
+    status: active
+    ipv4: "10.100.0.10"
+    ipv6: "fd00:100::10"
+    mac: "02:00:00:00:00:01"
+    cpe_model: "Lab-CPE-v1"
+    provisioned_at: "2026-01-01T00:00:00Z"
+
+  - id: SYN-SUB-002
+    name: "Test Subscriber Beta"
+    account_id: SYN-ACC-002
+    service_tier: premium
+    quota_gb: 200
+    quota_used_gb: 45.0
+    status: active
+    ipv4: "10.100.0.11"
+    ipv6: "fd00:100::11"
+    mac: "02:00:00:00:00:02"
+    cpe_model: "Lab-CPE-v1"
+    provisioned_at: "2026-01-15T00:00:00Z"
+
+  - id: SYN-SUB-003
+    name: "Test Subscriber Gamma (Expired)"
+    account_id: SYN-ACC-003
+    service_tier: standard
+    quota_gb: 50
+    quota_used_gb: 50.0
+    status: quota_exceeded
+    ipv4: "10.100.0.12"
+    ipv6: "fd00:100::12"
+    mac: "02:00:00:00:00:03"
+    cpe_model: "Lab-CPE-v1"
+    provisioned_at: "2026-02-01T00:00:00Z"
+
+  - id: SYN-SUB-004
+    name: "Test Subscriber Delta (Suspended)"
+    account_id: SYN-ACC-004
+    service_tier: standard
+    quota_gb: 50
+    quota_used_gb: 0.0
+    status: suspended
+    ipv4: "10.100.0.13"
+    ipv6: "fd00:100::13"
+    mac: "02:00:00:00:00:04"
+    cpe_model: "Lab-CPE-v1"
+    provisioned_at: "2026-03-01T00:00:00Z"

@@ -1,49 +1,76 @@
 # ISP Red Team Operations
 
-Professional repository scaffold for an auditable ISP/network security assessment and controlled adversary-emulation program.
+Professional, auditable Red Team security research environment for ISP network assessment.
 
-## Status
-Architecture and operating model are being established. No production attack workflow is enabled by default.
+## Mission
 
-## Repository map
+Test the hypothesis: **Do vulnerabilities or misconfigurations exist in ISP security controls that could allow unauthorized service access or incorrect accounting?**
 
-- `docs/` — architecture, mission, methodology, glossary, decision records
-- `command/` — scope, rules of engagement, approvals, mission control
-- `scenarios/` — controlled test scenarios
-- `operations/` — runbooks and operator checklists
-- `telemetry/` — schemas and collection specifications; raw telemetry is external
-- `evidence/` — evidence manifests and integrity metadata; raw evidence is external
-- `findings/` — finding records and remediation/retest records
-- `reports/` — report templates and generated report metadata
-- `scripts/` — safe local validation/bootstrap helpers
-- `.github/` — repository governance and CI
+This is NOT a tool collection. It is a process-driven, hypothesis-based security research platform where every test is:
 
-## First setup
+- **Authorized** — explicit scope and approval required
+- **Controlled** — safety engine and kill switch enforce boundaries
+- **Isolated** — lab environment with synthetic data by default
+- **Auditable** — full evidence chain of custody with SHA-256 integrity
+- **Reproducible** — structured scenarios with deterministic execution
+- **Documented** — findings, evidence, and reports are linked and traceable
+
+## Quick Start
 
 ```bash
-git init
-git branch -M main
-git add .
-git commit -m "chore: initialize ISP red team operations repository"
+# Install the platform
+pip install -e ".[dev]"
+
+# Verify the repository
+python scripts/validate_repo.py
+
+# Check the scope
+redteam scope validate
+
+# Run safety checks
+redteam safety check
+
+# Execute a dry run
+redteam run dry-run --scenario SC-ACC-001
+
+# Manage the kill switch
+redteam safety killswitch status
 ```
 
-Then configure GitHub repository settings:
-- branch/ruleset protection
-- required pull-request review
-- CODEOWNERS
-- Dependabot
-- secret scanning / push protection where available
-- code scanning where appropriate
+## Repository Structure
 
-GitHub documents these controls in its security and repository documentation.
+| Directory | Purpose |
+|---|---|
+| `command/` | Mission control — scope, ROE, approvals |
+| `research/` | Hypothesis registry and vulnerability research |
+| `scenarios/` | Structured test scenario definitions (YAML) |
+| `operations/` | Runbooks, checklists, kill switch |
+| `src/redteam/` | Python runtime — engines, CLI, telemetry, evidence |
+| `tests/` | Python test suite |
+| `telemetry/` | Telemetry schemas (raw data is external) |
+| `evidence/` | Evidence manifests and chain of custody (raw data is external) |
+| `findings/` | Finding records and remediation tracking |
+| `reports/` | Report templates and generated reports |
+| `lab/` | Lab topology, services, synthetic data |
+| `data/` | Test fixtures and synthetic data |
+| `config/` | Configuration schemas and environment profiles |
+| `scripts/` | Validation and utility scripts |
+| `docs/` | Architecture, methodology, ADRs, security |
 
-## Important
-This repository intentionally separates:
-1. mission design,
-2. execution procedures,
-3. telemetry,
-4. evidence,
-5. findings,
-6. reporting.
+## Key Principles
 
-Do not put raw PCAPs, credentials, customer records, or production exports into Git.
+1. **Process over tools** — the operational lifecycle is the center, not scripts
+2. **Hypothesis-driven** — test whether vulnerabilities exist, don't assume they do
+3. **Lab first** — all tests must work in lab before touching real infrastructure
+4. **Evidence integrity** — SHA-256 hashing, chain of custody, immutable records
+5. **Safety by default** — scope engine, safety engine, and kill switch enforce boundaries
+
+## Data Isolation
+
+Git contains **only**: source code, schemas, documentation, scenario definitions, evidence metadata, and finding metadata.
+
+Git **never** contains: raw PCAP, credentials, customer data, production exports, secrets, or sensitive logs.
+
+## Documentation
+
+See `docs/README.md` for the documentation index.

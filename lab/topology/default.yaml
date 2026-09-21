@@ -1,0 +1,76 @@
+# Lab Topology — Default Configuration
+
+# This topology defines a self-contained lab environment
+# that can operate without real ISP connectivity.
+
+topology:
+  name: default-lab
+  description: "Standalone lab for ISP Red Team testing"
+  version: "1.0"
+
+  nodes:
+    - name: test-client
+      role: client
+      description: "Test subscriber client device"
+      network: lab-lan
+      ip: "10.100.0.10"
+
+    - name: test-cpe
+      role: cpe
+      description: "Simulated CPE/modem"
+      network: lab-lan
+      ip: "10.100.0.1"
+      upstream_network: lab-wan
+
+    - name: lab-gateway
+      role: gateway
+      description: "Simulated ISP gateway/BNG"
+      network: lab-wan
+      ip: "10.200.0.1"
+      services:
+        - dhcp
+        - nat
+        - policy_enforcement
+        - accounting
+
+    - name: lab-dns
+      role: dns
+      description: "Lab DNS resolver"
+      network: lab-wan
+      ip: "10.200.0.53"
+      services:
+        - dns_resolution
+        - dns_logging
+
+    - name: lab-tls-endpoint
+      role: endpoint
+      description: "Controlled TLS test endpoint"
+      network: lab-wan
+      ip: "10.200.0.443"
+      services:
+        - https
+        - tls
+
+    - name: lab-accounting
+      role: accounting
+      description: "Simulated accounting/RADIUS server"
+      network: lab-wan
+      ip: "10.200.0.100"
+      services:
+        - radius
+        - accounting
+
+    - name: telemetry-collector
+      role: telemetry
+      description: "Telemetry and evidence collector"
+      network: lab-wan
+      ip: "10.200.0.200"
+
+  networks:
+    - name: lab-lan
+      cidr: "10.100.0.0/24"
+      description: "Subscriber LAN"
+
+    - name: lab-wan
+      cidr: "10.200.0.0/24"
+      description: "ISP core network simulation"
