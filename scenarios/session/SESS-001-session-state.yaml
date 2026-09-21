@@ -1,0 +1,74 @@
+# SESS-001 — Session State and Lease Expiration Test
+# Validates subscriber session tracking, RADIUS/Diameter interim updates, and lease lifecycles
+
+scenario_id: SC-SESS-001
+version: "1.0"
+status: implemented
+objective: "Verify session lifecycle consistency between gateway state, RADIUS accounting, and data path"
+hypothesis: >
+  Inconsistencies or race conditions between session establishment, DHCP/PPPoE lease expiration,
+  and RADIUS stop/interim updates could permit lingering data path access after session termination.
+
+risk: low
+scope_ref: command/scope.yaml
+test_identity: TEST-ACCOUNT-SESS-001
+
+prerequisites:
+  - Scope approved and populated
+  - Test subscriber able to connect and disconnect dynamically
+  - Timestamp synchronization active
+
+steps:
+  - action: baseline_session_start
+    description: "Establish active subscriber session and verify operational parameters"
+    measurements:
+      - session_id
+      - start_timestamp
+      - initial_ip_lease
+
+  - action: steady_state_traffic
+    description: "Transmit controlled background traffic during active session"
+    parameters:
+      duration_seconds: 20
+      rate_kbps: 500
+    measurements:
+      - packets_transmitted
+      - intermediate_accounting_delta
+
+  - action: session_termination_test
+    description: "Trigger graceful subscriber disconnect and measure data plane cutoff latency"
+    measurements:
+      - disconnect_request_timestamp
+      - cutoff_timestamp
+      - latency_to_enforcement_ms
+      - orphan_packets_passed
+
+expected_behavior: >
+  Data plane traffic is immediately cut off upon session termination or lease expiration.
+  Accounting session stop message matches total transmitted volume.
+
+measurements:
+  - session disconnect timing deltas
+  - post-disconnect packet acceptance count
+  - RADIUS accounting correlation
+
+telemetry:
+  - gateway session logs
+  - accounting start/stop events
+
+evidence:
+  - session lifecycle trace
+  - cutoff measurement timing log
+  - SHA-256 hash manifest
+
+stop_conditions:
+  - Disconnect impacts unauthorized sessions
+
+cleanup:
+  - Reset interface to known idle state
+
+success_criteria: >
+  Data path access terminates synchronously (within <1000ms) of session teardown.
+
+failure_criteria: >
+  Traffic continues to route indefinitely after session termination (ghost session state).

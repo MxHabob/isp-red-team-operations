@@ -5,6 +5,14 @@ from __future__ import annotations
 import sys
 from pathlib import Path
 
+# Safe terminal encoding setup for cross-platform support
+if sys.platform == "win32":
+    try:
+        sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+        sys.stderr.reconfigure(encoding="utf-8", errors="replace")
+    except Exception:
+        pass
+
 ROOT = Path(__file__).resolve().parents[1]
 
 
@@ -59,12 +67,12 @@ def main() -> int:
     errors = check_data_isolation()
 
     if errors:
-        print(f"✗ Data isolation FAILED — {len(errors)} issue(s):\n")
+        print(f"[FAIL] Data isolation FAILED — {len(errors)} issue(s):\n")
         for err in errors:
-            print(f"  • {err}")
+            print(f"  * {err}")
         return 1
     else:
-        print("✓ Data isolation validation PASSED")
+        print("[OK] Data isolation validation PASSED")
         return 0
 
 

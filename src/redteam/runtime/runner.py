@@ -73,6 +73,9 @@ class TestRunner:
     If any check phase fails, execution skips to CLEANUP.
     """
 
+    __test__ = False
+
+
     def __init__(
         self,
         config: PlatformConfig,

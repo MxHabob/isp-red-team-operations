@@ -1,0 +1,104 @@
+# AUTH-001 — Authentication Boundary Test
+# Tests captive portal, PPPoE/DHCP 802.1X, and pre-auth policy enforcement
+
+scenario_id: SC-AUTH-001
+version: "1.0"
+status: implemented
+objective: "Validate that unauthenticated subscribers cannot access unauthorized network resources"
+hypothesis: >
+  In an unauthenticated state, the ISP edge controls (Captive Portal / BRAS / BNG)
+  must strictly restrict all egress traffic except explicitly whitelisted captive portal
+  and DNS/DHCP infrastructure. Any unauthorized data path egress represents an authentication gap.
+
+risk: low
+scope_ref: command/scope.yaml
+test_identity: TEST-ACCOUNT-UNAUTH-001
+
+prerequisites:
+  - Scope approved and populated
+  - Test client connected in unauthenticated state
+  - Pre-auth network interface active
+  - Independent telemetry collector online
+  - Evidence store initialized
+
+steps:
+  - action: baseline
+    description: "Verify unauthenticated state and record baseline network configuration"
+    measurements:
+      - assigned_ip_address
+      - default_gateway
+      - assigned_dns_servers
+      - captive_portal_redirect_url
+
+  - action: probe_whitelisted_services
+    description: "Verify access to authorized captive portal and core infrastructure"
+    parameters:
+      targets:
+        - captive_portal_http
+        - captive_portal_https
+        - local_dns_resolver
+    measurements:
+      - response_code
+      - reachability
+      - latency_ms
+
+  - action: probe_unauthorized_destinations
+    description: "Test egress to external unauthorized destinations across multiple ports and protocols"
+    parameters:
+      protocols:
+        - http
+        - https
+        - dns_direct
+        - icmp
+        - custom_tcp
+      test_ports: [80, 443, 53, 8080, 8443, 8000]
+    measurements:
+      - packets_sent
+      - packets_received
+      - redirection_occurred
+      - tcp_handshake_completed
+
+  - action: evaluate_isolation
+    description: "Assess whether any unauthorized traffic escaped the pre-authentication boundary"
+    measurements:
+      - leaked_packet_count
+      - non_whitelisted_bytes_transferred
+
+expected_behavior: >
+  All non-whitelisted traffic is dropped or redirected to the captive portal.
+  No external internet connectivity is achieved without completing authentication.
+
+measurements:
+  - pre-auth IP configuration
+  - redirection behaviors and HTTP response headers
+  - packet counters for unauthorized egress probes
+  - DNS resolution behavior in pre-auth state
+
+telemetry:
+  - captive portal interaction logs
+  - network interface counters
+  - firewall probe logs
+
+evidence:
+  - pre-auth probe results log
+  - capture metadata
+  - redirect HTTP trace
+  - SHA-256 hash manifest
+
+stop_conditions:
+  - Traffic reaches unintended target out of scope
+  - Customer data or third-party session is exposed
+  - Network segment instability detected
+
+cleanup:
+  - Terminate test probe sockets
+  - Reset test network interface
+  - Record final boundary state
+
+success_criteria: >
+  Unauthenticated state strictly prevents access to unauthorized endpoints.
+  Redirection to captive portal works as documented without data leakage.
+
+failure_criteria: >
+  Unauthorized internet traffic succeeds before authentication, or DNS tunneling /
+  protocol bypass permits unauthenticated data exchange.

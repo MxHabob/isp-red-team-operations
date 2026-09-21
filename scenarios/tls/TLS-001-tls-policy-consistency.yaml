@@ -1,0 +1,84 @@
+# TLS-001 — TLS Policy Consistency and SNI Classification Test
+# Evaluates SNI filtering, TLS 1.3 ECH handling, and traffic classification behavior
+
+scenario_id: SC-TLS-001
+version: "1.0"
+status: implemented
+objective: "Evaluate DPI / SNI filtering consistency and TLS inspection behavior"
+hypothesis: >
+  Traffic classification and policy enforcement relying on cleartext SNI may fail or misclassify
+  sessions when Encrypted Client Hello (ECH), TLS 1.3 session resumption, or custom ALPN negotiation is used.
+
+risk: low
+scope_ref: command/scope.yaml
+test_identity: TEST-ACCOUNT-TLS-001
+
+prerequisites:
+  - Scope approved and verified
+  - Authorized TLS test server online supporting TLS 1.2, TLS 1.3, and ECH
+  - Client crypto probe tooling initialized
+
+steps:
+  - action: baseline
+    description: "Establish baseline TLS 1.3 connection to authorized test server"
+    measurements:
+      - negotiated_tls_version
+      - cipher_suite
+      - handshake_duration_ms
+
+  - action: standard_sni_probe
+    description: "Test connections with standard explicit SNI headers"
+    parameters:
+      sni_value: "test-authorized.isp-redteam.internal"
+    measurements:
+      - connection_status
+      - bytes_accounted
+      - interception_detected
+
+  - action: ech_probe
+    description: "Test connection with Encrypted Client Hello (ECH) enabled"
+    parameters:
+      use_ech: true
+    measurements:
+      - connection_status
+      - ech_handshake_accepted
+      - policy_enforcement_observed
+
+  - action: alpn_variation_test
+    description: "Test ALPN protocol variations (h2, http/1.1, custom) for classification impact"
+    parameters:
+      alpn_protocols: ["h2", "http/1.1", "spdy/3.1"]
+    measurements:
+      - alpn_selected
+      - rate_shaping_applied
+
+expected_behavior: >
+  Traffic classification applies consistently regardless of SNI encryption state without breaking compliant TLS sessions.
+
+measurements:
+  - TLS handshake packet sizes and round trips
+  - certificate validation chain
+  - classification tag from telemetry
+
+telemetry:
+  - TLS client logs
+  - DPI / flow classification counters
+
+evidence:
+  - TLS probe handshake transcripts (redacted metadata)
+  - flow classification records
+  - SHA-256 hash manifest
+
+stop_conditions:
+  - Inadvertent degradation of production TLS proxy
+  - Scope error
+
+cleanup:
+  - Close TLS sockets
+  - Record test summary
+
+success_criteria: >
+  TLS policies behave consistently across cleartext SNI, ECH, and ALPN negotiations.
+
+failure_criteria: >
+  DPI classification relies solely on spoofable cleartext headers to grant preferential rate limits or bypass accounting.

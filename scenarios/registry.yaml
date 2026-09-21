@@ -13,39 +13,39 @@ scenarios:
   - id: SC-AUTH-001
     file: authentication/AUTH-001-authentication-boundary.yaml
     category: authentication
-    status: planned
+    status: implemented
 
   - id: SC-AUTHZ-001
     file: authorization/AUTHZ-001-authorization-boundary.yaml
     category: authorization
-    status: planned
+    status: implemented
 
   - id: SC-DNS-001
     file: dns/DNS-001-dns-policy-consistency.yaml
     category: dns
-    status: planned
+    status: implemented
 
   - id: SC-NET-001
     file: network/NET-001-network-baseline.yaml
     category: network
-    status: planned
+    status: implemented
 
   - id: SC-TLS-001
     file: tls/TLS-001-tls-policy-consistency.yaml
     category: tls
-    status: planned
+    status: implemented
 
   - id: SC-SESS-001
     file: session/SESS-001-session-state.yaml
     category: session
-    status: planned
+    status: implemented
 
   - id: SC-QUOTA-001
     file: quota/QUOTA-001-quota-enforcement.yaml
     category: quota
-    status: planned
+    status: implemented
 
   - id: SC-MON-001
     file: monitoring/MON-001-detection-baseline.yaml
     category: monitoring
-    status: planned
+    status: implemented

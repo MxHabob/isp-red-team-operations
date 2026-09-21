@@ -1,0 +1,80 @@
+# NET-001 — Network Baseline and Dual-Stack Policy Consistency Test
+# Validates path characteristics, MTU, MSS, routing symmetry, and IPv4 vs IPv6 consistency
+
+scenario_id: SC-NET-001
+version: "1.0"
+status: implemented
+objective: "Establish network baseline metrics and evaluate policy parity between IPv4 and IPv6 paths"
+hypothesis: >
+  ISP policy, rate limiting, firewalling, and routing behavior should be strictly equivalent
+  across IPv4 and IPv6 transports. Inconsistencies between IPv4 and IPv6 policies can create bypass opportunities.
+
+risk: low
+scope_ref: command/scope.yaml
+test_identity: TEST-ACCOUNT-DUALSTACK-001
+
+prerequisites:
+  - Dual-stack IPv4/IPv6 interface active
+  - Approved test targets reachable over both v4 and v6
+  - ICMP and UDP diagnostic probes permitted in scope
+
+steps:
+  - action: baseline_path_discovery
+    description: "Discover network hops, PMTU, and latency metrics across IPv4 and IPv6 paths"
+    measurements:
+      - ipv4_hop_count
+      - ipv6_hop_count
+      - path_mtu_ipv4
+      - path_mtu_ipv6
+      - rtt_ipv4_ms
+      - rtt_ipv6_ms
+
+  - action: dual_stack_throughput_comparison
+    description: "Run symmetric bandwidth measurement on IPv4 and IPv6 to test shaping parity"
+    parameters:
+      duration_seconds: 15
+      payload_size: 5242880  # 5 MB
+    measurements:
+      - ipv4_throughput_mbps
+      - ipv6_throughput_mbps
+      - delta_percentage
+
+  - action: protocol_filtering_parity
+    description: "Probe common egress ports on both IPv4 and IPv6 to test firewall rule synchronization"
+    parameters:
+      test_ports: [25, 53, 80, 443, 445, 8080, 8443]
+    measurements:
+      - ipv4_blocked_ports
+      - ipv6_blocked_ports
+      - policy_asymmetry_found
+
+expected_behavior: >
+  IPv4 and IPv6 exhibit identical firewall filtering rules and rate-limiting policies within operational tolerances.
+
+measurements:
+  - traceroute hop sequences
+  - path MTU discovery results
+  - throughput comparison metrics
+
+telemetry:
+  - interface packet counters (v4 vs v6)
+  - latency telemetry
+
+evidence:
+  - network probe summaries
+  - route comparison log
+  - SHA-256 hash manifest
+
+stop_conditions:
+  - Network saturation exceeds threshold
+  - Scope boundary breach
+
+cleanup:
+  - Reset network probe sockets
+  - Record baseline completion
+
+success_criteria: >
+  IPv4 and IPv6 policies are fully aligned with zero unmanaged firewall discrepancies.
+
+failure_criteria: >
+  Firewall rules or quota/bandwidth caps apply on IPv4 but are absent or bypassed on IPv6 (or vice versa).

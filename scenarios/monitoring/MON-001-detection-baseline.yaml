@@ -1,0 +1,76 @@
+# MON-001 — Detection and Telemetry Baseline Test
+# Evaluates SOC / NOC visibility, alert generation, and telemetry capture during operations
+
+scenario_id: SC-MON-001
+version: "1.0"
+status: implemented
+objective: "Verify SOC/NOC telemetry observability and alert triggers for known test patterns"
+hypothesis: >
+  Standard network telemetry (NetFlow/IPFIX, Syslog, SNMP) should capture and report
+  operational anomalies and test sequences within defined SLA windows to ensure full auditability.
+
+risk: low
+scope_ref: command/scope.yaml
+test_identity: TEST-ACCOUNT-MON-001
+
+prerequisites:
+  - Scope approved and validated
+  - SIEM / NetFlow collector listening
+  - Test scenario execution logged with precise microsecond timestamps
+
+steps:
+  - action: baseline_telemetry_check
+    description: "Verify active flow export and collector heartbeats"
+    measurements:
+      - collector_status
+      - flow_export_rate_fps
+
+  - action: structured_test_signature
+    description: "Transmit distinctive, low-volume test pattern to verify detection pipeline"
+    parameters:
+      pattern_id: "SIG-REDTEAM-AUDIT-001"
+      packet_count: 50
+    measurements:
+      - transmission_timestamp
+      - signature_bytes
+
+  - action: correlation_validation
+    description: "Query telemetry backend to confirm flow record generation and alert generation"
+    parameters:
+      query_window_seconds: 60
+    measurements:
+      - flow_records_found
+      - detection_latency_seconds
+      - field_accuracy_percentage
+
+expected_behavior: >
+  Test activity is accurately recorded in NetFlow and SIEM feeds within standard indexing latency (<60s).
+
+measurements:
+  - flow record match score
+  - detection pipeline latency
+  - completeness of telemetry attributes
+
+telemetry:
+  - NetFlow / IPFIX flow export records
+  - SIEM query results
+  - collector log entries
+
+evidence:
+  - SIEM query export (metadata)
+  - flow verification report
+  - SHA-256 hash manifest
+
+stop_conditions:
+  - Excessive load on SIEM indexers
+  - Scope mismatch
+
+cleanup:
+  - Clear temporary queries
+  - Save observability report
+
+success_criteria: >
+  100% of generated test flows are captured and queryable in the monitoring repository.
+
+failure_criteria: >
+  Test traffic is completely invisible to network telemetry and security monitoring.

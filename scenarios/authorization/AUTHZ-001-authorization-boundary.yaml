@@ -1,0 +1,88 @@
+# AUTHZ-001 — Tier and Service Authorization Boundary Test
+# Validates policy separation between service tiers and subscriber profiles
+
+scenario_id: SC-AUTHZ-001
+version: "1.0"
+status: implemented
+objective: "Verify that subscribers cannot exceed tier limits or access restricted service profiles"
+hypothesis: >
+  After valid subscriber authentication, bandwidth shaping, quality of service (QoS),
+  and service profiles should strictly adhere to the provisioned tier. Any ability to
+  escalate throughput or access restricted management VLANs indicates an authorization boundary gap.
+
+risk: low
+scope_ref: command/scope.yaml
+test_identity: TEST-ACCOUNT-TIER1-001
+
+prerequisites:
+  - Scope approved and verified
+  - Test subscriber authenticated with standard tier (Tier 1) profile
+  - Baseline rate-limiting rules documented
+  - High-precision bandwidth measurement sink available
+
+steps:
+  - action: baseline
+    description: "Measure baseline throughput and latency at standard tier provisioning"
+    measurements:
+      - provisioned_downlink_mbps
+      - provisioned_uplink_mbps
+      - baseline_rtt_ms
+
+  - action: egress_burst_test
+    description: "Generate traffic bursts to test bandwidth cap enforcement and policing algorithms"
+    parameters:
+      target_bandwidth_multiplier: 2.0
+      duration_seconds: 30
+      protocol: udp
+    measurements:
+      - actual_throughput_mbps
+      - dropped_packet_ratio
+      - burst_tolerance_bytes
+
+  - action: privileged_network_probe
+    description: "Attempt access to operator internal management subnets and restricted service endpoints"
+    parameters:
+      target_subnets:
+        - management_vlan_probe
+        - tr069_acs_server
+        - voice_sip_vlan
+    measurements:
+      - reachability
+      - syn_ack_received
+      - icmp_unreachable_count
+
+expected_behavior: >
+  Traffic exceeding the provisioned tier rate is policed/shaped according to SLA.
+  Operator internal subnets and unauthorized service profiles remain unreachable.
+
+measurements:
+  - maximum sustained bandwidth
+  - policer drop rate
+  - subnet isolation probe logs
+
+telemetry:
+  - BRAS/BNG queue statistics (if available)
+  - interface ingress/egress bytes
+  - packet loss telemetry
+
+evidence:
+  - bandwidth test summary log
+  - management subnet probe results
+  - SHA-256 hash manifest
+
+stop_conditions:
+  - Adverse impact on neighboring subscriber traffic
+  - Scope deviation detected
+
+cleanup:
+  - Cease throughput tests
+  - Verify baseline tier state
+  - Archive evidence
+
+success_criteria: >
+  Bandwidth caps are strictly enforced within ±5% of profile specification;
+  isolated management planes remain fully inaccessible.
+
+failure_criteria: >
+  Sustained throughput exceeds tier limit by >15%, or internal management endpoints
+  respond to customer VLAN traffic.

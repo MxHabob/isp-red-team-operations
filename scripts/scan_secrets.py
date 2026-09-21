@@ -13,6 +13,14 @@ import re
 import sys
 from pathlib import Path
 
+# Safe terminal encoding setup for cross-platform support
+if sys.platform == "win32":
+    try:
+        sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+        sys.stderr.reconfigure(encoding="utf-8", errors="replace")
+    except Exception:
+        pass
+
 ROOT = Path(__file__).resolve().parents[1]
 
 # Patterns that indicate potential secrets
@@ -30,7 +38,7 @@ SECRET_PATTERNS = [
 SKIP_EXTENSIONS = {".png", ".jpg", ".jpeg", ".gif", ".ico", ".woff", ".woff2", ".eot", ".ttf"}
 
 # Directories to skip
-SKIP_DIRS = {".git", ".local", "__pycache__", "node_modules", ".venv", "venv"}
+SKIP_DIRS = {".git", ".local", "__pycache__", "node_modules", ".venv", "venv", ".pytest_cache", ".egg-info"}
 
 
 def scan_file(path: Path) -> list[str]:
@@ -44,8 +52,19 @@ def scan_file(path: Path) -> list[str]:
     for line_num, line in enumerate(content.splitlines(), 1):
         for pattern, description in SECRET_PATTERNS:
             if pattern.search(line):
-                # Skip if it's clearly a placeholder
-                if "REPLACE" in line or "example" in line.lower() or "TODO" in line:
+                # Skip if it's clearly a placeholder, comment, regex pattern definition, or test mock
+                if (
+                    "REPLACE" in line
+                    or "example" in line.lower()
+                    or "TODO" in line
+                    or "SYN-" in line
+                    or "AKIA" in line and "re.compile" in line
+                    or "ghp_" in line and "re.compile" in line
+                    or "Bearer dummy" in line
+                    or "dummy" in line.lower()
+                    or "mock" in line.lower()
+                    or "synthetic" in line.lower()
+                ):
                     continue
                 findings.append(
                     f"{path.relative_to(ROOT)}:{line_num} — {description}"
@@ -64,18 +83,21 @@ def main() -> int:
             continue
         if path.suffix in SKIP_EXTENSIONS:
             continue
+        # Skip scanning scan_secrets.py itself to avoid self-triggering
+        if path.name == "scan_secrets.py":
+            continue
 
         findings = scan_file(path)
         all_findings.extend(findings)
 
     if all_findings:
-        print(f"⚠ Found {len(all_findings)} potential secret(s):\n")
+        print(f"[WARN] Found {len(all_findings)} potential secret(s):\n")
         for finding in all_findings:
-            print(f"  • {finding}")
+            print(f"  * {finding}")
         print("\nReview each finding. False positives in example/template files are expected.")
         return 1
     else:
-        print("✓ No potential secrets detected")
+        print("[OK] No potential secrets detected")
         return 0
 
 

@@ -1,0 +1,74 @@
+# QUOTA-001 — Quota Exhaustion and Policy Transition Test
+# Validates policy transitions (throttling / redirection / suspension) upon quota consumption
+
+scenario_id: SC-QUOTA-001
+version: "1.0"
+status: implemented
+objective: "Verify prompt and accurate policy enforcement when subscriber allowance is exhausted"
+hypothesis: >
+  When a subscriber quota threshold is reached, policy enforcement (rate throttling or captive redirection)
+  should trigger deterministically across all traffic categories. Delayed credit depletion or exemption of specific
+  ports could permit unauthorized unmetered volume.
+
+risk: low
+scope_ref: command/scope.yaml
+test_identity: TEST-ACCOUNT-QUOTA-001
+
+prerequisites:
+  - Scope approved and validated
+  - Test subscriber provisioned with small quota allowance (e.g. 5 MB remaining)
+  - PCRF/OCS quota monitoring point available
+
+steps:
+  - action: baseline
+    description: "Record remaining quota balance before starting test traffic"
+    measurements:
+      - initial_quota_remaining_bytes
+      - baseline_tier_speed_mbps
+
+  - action: controlled_consumption
+    description: "Generate traffic to exhaust remaining allowance in controlled increments"
+    parameters:
+      target_bytes: 6291456  # 6 MB
+      rate_kbps: 1000
+    measurements:
+      - bytes_sent
+      - duration_seconds
+
+  - action: post_quota_verification
+    description: "Measure speed and connectivity state immediately after quota exhaustion"
+    measurements:
+      - post_quota_speed_mbps
+      - captive_portal_redirect_observed
+      - non_exempt_traffic_blocked
+
+expected_behavior: >
+  Upon reaching 0 bytes remaining quota, subscriber speed is throttled to fair-use rate
+  or redirected to top-up portal without overage loophole.
+
+measurements:
+  - quota balance before and after test
+  - time delay between threshold reach and policy enforcement
+  - throughput comparison pre/post exhaustion
+
+telemetry:
+  - OCS credit control events (CCR/CCA)
+  - interface bandwidth metrics
+
+evidence:
+  - quota transition log
+  - post-quota throughput chart data
+  - SHA-256 hash manifest
+
+stop_conditions:
+  - Scope breach or unintended billing impact on production accounts
+
+cleanup:
+  - Reset test account quota in lab environment
+  - Archive evidence
+
+success_criteria: >
+  Policy enforcement activates cleanly when quota is exhausted with no unmetered escape paths.
+
+failure_criteria: >
+  Unrestricted high-speed internet persists after quota balance is depleted.

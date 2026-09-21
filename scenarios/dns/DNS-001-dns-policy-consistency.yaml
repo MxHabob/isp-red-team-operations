@@ -1,0 +1,84 @@
+# DNS-001 — DNS Policy Consistency and Resolution Integrity Test
+# Tests ISP resolver policies, redirection, transparent interception, and tunneling boundaries
+
+scenario_id: SC-DNS-001
+version: "1.0"
+status: implemented
+objective: "Evaluate consistency of ISP DNS resolution, filtering policy, and transparent redirection"
+hypothesis: >
+  The ISP DNS resolver infrastructure may exhibit differences in filtering, caching,
+  or transparent interception depending on protocol (UDP/53, TCP/53, DoH, DoT), destination resolver IP,
+  or quota exhaustion status. Unaccounted or non-filtered DNS behaviors represent policy and accounting gaps.
+
+risk: low
+scope_ref: command/scope.yaml
+test_identity: TEST-ACCOUNT-DNS-001
+
+prerequisites:
+  - Scope approved and verified
+  - Assigned ISP recursive DNS server IP confirmed
+  - Controlled authoritative test nameserver active for telemetry
+  - Baseline domain query set defined
+
+steps:
+  - action: baseline
+    description: "Query standard domains via ISP assigned resolver to record baseline response behavior"
+    measurements:
+      - resolver_ip
+      - response_rtt_ms
+      - ttl_observed
+      - edns_client_subnet_present
+
+  - action: transparent_dns_interception_check
+    description: "Send DNS queries to external public resolvers (8.8.8.8, 1.1.1.1) to test transparent NAT/redirection"
+    parameters:
+      external_resolvers: ["8.8.8.8", "1.1.1.1", "9.9.9.9"]
+      ports: [53, 853]
+    measurements:
+      - response_received
+      - answering_server_fingerprint
+      - transparently_intercepted
+
+  - action: encrypted_dns_test
+    description: "Test DNS-over-HTTPS (DoH) and DNS-over-TLS (DoT) path consistency and accounting behavior"
+    parameters:
+      endpoints:
+        - doh_cloudflare
+        - doh_quad9
+    measurements:
+      - tls_handshake_status
+      - query_resolution_success
+      - bytes_accounted
+
+expected_behavior: >
+  DNS queries adhere to documented ISP policy. Any transparent interception is transparently logged,
+  and encrypted DNS transport is handled predictably under active traffic policies.
+
+measurements:
+  - authoritative vs recursive answer diffs
+  - interception detection flags
+  - latency comparisons across Do53, DoH, DoT
+
+telemetry:
+  - client query logs
+  - authoritative server query logs
+  - network flow records
+
+evidence:
+  - DNS query/response logs
+  - resolver fingerprint data
+  - SHA-256 hash manifest
+
+stop_conditions:
+  - Resolver failure or cascade failure observed
+  - Query destination outside approved scope
+
+cleanup:
+  - Flush local resolver cache
+  - Record test completion
+
+success_criteria: >
+  DNS policy behaves consistently across all supported transport modes without unauthorized spoofing or leakage.
+
+failure_criteria: >
+  Undocumented transparent DNS hijacking occurs, or unauthenticated DNS tunneling permits unrestricted data exfiltration.
